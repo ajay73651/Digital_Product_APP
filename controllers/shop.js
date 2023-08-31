@@ -2,11 +2,24 @@ const Product = require('../models/product');
 const Cart = require('../models/cart');
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
-  .then(([rows, fieldData]) => {
-    res.render('shop/product-list', {
-      prods: rows,
-      pageTitle: 'All Products',
+  Product.findAll()
+  .then ( products => {
+      res.render('shop/product-list', {
+        prods: products,
+        pageTitle: 'All Products',
+        path: '/products'
+      });
+  }).catch (err => {
+    console.log(err);
+  });
+};
+
+exports.getProduct = (req, res, next) => {
+  const prodId = req.params.productId;
+  Product.findAll({where : {id: prodId}}).then(products => {
+    res.render('shop/product-detail', {
+      product: products[0],
+      pageTitle: products[0].title,
       path: '/products'
     });
   }).catch(err => {
@@ -14,30 +27,15 @@ exports.getProducts = (req, res, next) => {
   });
 };
 
-exports.getProduct = (req, res, next) => {
-  const prodId = req.params.productId;
-  Product.findById(prodId).then(
-   ([product])=> {
-       res.render('shop/product-detail', {
-         product: product[0],
-         pageTitle: product.title,
-         path: '/products'
-       });
-   }).catch(err => {
-    console.log(err);
-  });
-};
-
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
-  .then(([rows, fieldData]) => {
-    console.log(rows);
-    res.render('shop/index', {
-      prods: rows,
-      pageTitle: 'Shop',
-      path: '/'
-    });
-  }).catch(err => {
+  Product.findAll()
+  .then ( products => {
+      res.render('shop/index', {
+        prods: products,
+        pageTitle: 'Shop',
+        path: '/'
+      })
+  }).catch (err => {
     console.log(err);
   });
 };
@@ -69,6 +67,24 @@ exports.postCart = (req, res, next) => {
     Cart.addProduct(prodId, product.price);
   });
   res.redirect('/cart');
+};
+
+exports.getEditProduct = (req, res, next) => {
+  const prodId = req.params.productId;
+  Product.findAll({where : {id : prodId}}).then((products) => {
+    if (!products) {
+      return res.redirect('/');
+    }
+    res.render('admin/edit-product', {
+      pageTitle: 'Edit Product',
+      path: '/admin/edit-product',
+      editing: editMode,
+      product: products[0]
+    });
+  }).catch((err) => {
+    console.log(err);
+  });
+  
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {
