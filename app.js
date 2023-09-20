@@ -34,6 +34,7 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
+User.hasMany(Product, { constraints: true, onDelete: "CASCADE"});
 
 sequelize
   .sync()
@@ -47,6 +48,7 @@ sequelize
     return user;
   })
   .then((user) => {
+    // console.log(user);
     app.listen(3000);
   })
   .catch((err) => {
